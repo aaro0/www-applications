@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVG Lens - Portal Exploit</title>
+    <link rel="stylesheet" href="cross-browser-compatible.css">
+</head>
+<body>
+
+    <div class="app-container">
+        <div class="sandbox" id="sandbox">
+            
+            <!-- 1. The Real Content -->
+            <div class="sandbox-content" id="real-content">
+                <p>
+                    Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu. In enim justo, rhoncus ut, imperdiet a, venenatis vitae, justo. Nullam dictum felis eu pede mollis pretium.
+                </p>
+
+                <p>
+                    Integer tincidunt. Cras dapibus. Vivamus elementum semper nisi. Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu, consequat vitae, eleifend ac, enim. Aliquam lorem ante, dapibus in, viverra quis, feugiat a, tellus. Phasellus viverra nulla ut metus varius laoreet. Quisque rutrum. Aenean imperdiet. Etiam ultricies nisi vel augue. Curabitur ullamcorper ultricies nisi. Nam eget dui. Etiam rhoncus.
+                </p>
+
+                <p>
+                    Maecenas tempus, tellus eget condimentum rhoncus, sem quam semper libero, sit amet adipiscing sem neque sed ipsum. Nam quam nunc, blandit vel, luctus pulvinar, hendrerit id, lorem. Maecenas nec odio et ante tincidunt tempus. Donec vitae sapien ut libero venenatis faucibus. Nullam quis ante. Etiam sit amet orci eget eros faucibus tincidunt. Duis leo. Sed fringilla mauris sit amet nibh. Donec sodales sagittis magna.
+                </p>
+
+                <p>
+                    Sed consequat, leo eget bibendum sodales, augue velit cursus nunc, quis gravida magna mi a libero. Fusce vulputate eleifend sapien. Vestibulum purus quam, scelerisque ut, mollis sed, nonummy id, metus. Nullam accumsan lorem in dui. Cras ultricies mi eu turpis hendrerit fringilla. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; In ac dui quis mi consectetuer lacinia. Nam pretium turpis et arcu. Duis arcu tortor, suscipit eget, imperdiet nec, imperdiet iaculis, ipsum.
+                </p>
+            </div>
+
+            <!-- 2. The Lens Window -->
+            <div id="lens-window" class="hidden">
+                <!-- Inner clip gets the SVG filter -->
+                <div class="lens-inner-clip">
+                    
+                    <!-- The cloned text lives here, moving backwards -->
+                    <div class="lens-portal-content" id="lens-portal"></div>
+                    
+                    <!-- Inner shading + Glass Rim -->
+                    <div class="lens-shading-layer"></div>
+                    <div class="lens-glass-rim"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 3. The 1-Channel Simple Filter -->
+    <svg xmlns="http://www.w3.org/2000/svg" style="position: absolute; width: 0; height: 0;" aria-hidden="true">
+
+
+
+        <filter id="liquid-lens" x="0" y="0" width="100%" height="100%" color-interpolation-filters="linearRGB">
+            <feImage 
+                href="./maps/displacement/magnification_pill.png" 
+                result="magnificationMap" 
+                x="0" y="0" 
+                width="100%" height="100%" 
+                preserveAspectRatio="none"
+            />
+            <feImage 
+                href="./maps/displacement/refraction_pill.png" 
+                result="refractionMap" 
+                x="0" y="0" 
+                width="100%" height="100%" 
+                preserveAspectRatio="none"
+            />
+            <feDisplacementMap
+                in="SourceGraphic"
+                in2="magnificationMap"
+                scale="40"
+                xChannelSelector="R"
+                yChannelSelector="G"
+                result="magnified"
+            />
+            <feDisplacementMap
+                in="magnified"
+                in2="refractionMap"
+                scale="40"
+                xChannelSelector="R"
+                yChannelSelector="G"
+                result="refracted"
+            />
+        </filter>
+
+    </svg>
+
+    <script src="cross-browser-compatible.js"></script>
+</body>
+</html>
