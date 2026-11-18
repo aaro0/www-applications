@@ -83,6 +83,38 @@ For RQ3, run both techniques in Chrome and the portal technique in Firefox and S
 Performance numbers for a combination are only meaningful where the compatibility check shows the
 filter actually renders.
 
+### Running in Safari (macOS and iOS)
+
+WebKit does not render SVG filters in `backdrop-filter`, so Safari is measured with the **portal**
+technique. The page selects it automatically in every non-Blink browser, including all iOS browsers,
+since they all use WebKit.
+
+1. **Open the page.** The easiest way is the GitHub Pages deployment after pushing. Locally on the Mac,
+   use `python3 -m http.server 8000` and `http://localhost:8000/benchmark.html`. For an iPhone or iPad
+   on the same Wi-Fi, run `python3 -m http.server 8000 --bind 0.0.0.0` on the laptop and open
+   `http://<laptop-ip>:8000/benchmark.html` on the device.
+2. **Check that it renders.** Drag on the sandbox. The loupe must visibly distort the content. If it
+   shows only the rim, or a blank or black circle, record that as a compatibility result and do not
+   collect performance data for that combination.
+3. **Remove frame-rate caps that would distort the numbers:**
+   * Turn off **Low Power Mode** (macOS: System Settings → Battery; iOS: Settings → Battery). It caps
+     rAF at 30 fps.
+   * On ProMotion (120 Hz) devices, Safari caps rAF at 60 Hz by default. Either keep the cap and note
+     that the budget is 60 Hz (the page measures and records the actual rate), or enable the higher rate
+     under Safari → Settings → Feature Flags ("Prefer Page Rendering Updates near 60fps" off). On iOS
+     the same flag is under Settings → Apps → Safari → Advanced → Feature Flags. Use the same choice on
+     every device.
+4. **Export the results.** On iOS, the JSON/CSV download goes to the Files app (Downloads). AirDrop the
+   files to the laptop.
+5. **Profile (optional).** Enable Safari → Settings → Advanced → "Show features for web developers",
+   then use Develop → Show Web Inspector → Timelines. For iOS, connect the device by cable and choose it
+   from the Develop menu on the Mac.
+
+Two changes from the demo make the benchmark more robust in WebKit. The displacement maps are embedded
+as data URIs, so `feImage` needs no network load. The sandbox is only made a Backdrop Root
+(`filter: blur(0)`) for the backdrop technique, so the portal technique does not filter the whole
+sandbox every frame.
+
 ## RQ1: visual comparison
 
 * **Interactive:** choose a background (photo, text on dark, text on light, checkerboard, fine stripes,

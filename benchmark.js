@@ -209,6 +209,15 @@ function complexityOf(config, diameter, dpr) {
 function detectBrowser() {
     const ua = navigator.userAgent;
     let m;
+    // Every iOS/iPadOS browser uses WebKit, whatever its name. iPadOS reports a Mac UA, hence the touch check.
+    const isIOS = /iPad|iPhone|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+    if (isIOS) {
+        if ((m = ua.match(/CriOS\/([\d.]+)/))) return { browser: 'Chrome iOS', version: m[1], engine: 'WebKit' };
+        if ((m = ua.match(/FxiOS\/([\d.]+)/))) return { browser: 'Firefox iOS', version: m[1], engine: 'WebKit' };
+        if ((m = ua.match(/EdgiOS\/([\d.]+)/))) return { browser: 'Edge iOS', version: m[1], engine: 'WebKit' };
+        m = ua.match(/Version\/([\d.]+)/);
+        return { browser: 'Safari iOS', version: m ? m[1] : '', engine: 'WebKit' };
+    }
     if ((m = ua.match(/Firefox\/([\d.]+)/))) return { browser: 'Firefox', version: m[1], engine: 'Gecko' };
     if ((m = ua.match(/Edg\/([\d.]+)/))) return { browser: 'Edge', version: m[1], engine: 'Blink' };
     if ((m = ua.match(/(?:Chrome|CriOS)\/([\d.]+)/))) return { browser: 'Chrome', version: m[1], engine: 'Blink' };
@@ -307,7 +316,7 @@ class Bench {
     async init() {
         const params = new URLSearchParams(location.search);
         this.buildChoiceLists();
-        await Promise.all([MAPS.magnification, MAPS.refraction, 'aalto.jpg'].map(preload));
+        await Promise.all([inlineMaps(), preload('aalto.jpg')]);
 
         if (params.has('static')) {
             await this.initStatic(params);
@@ -414,6 +423,9 @@ class Bench {
         }
 
         lens.dataset.technique = settings.technique;
+        // Only backdrop-filter needs the sandbox to be a Backdrop Root (filter: blur(0)). For the portal
+        // technique it would just add a full-sandbox filter pass to every frame in every configuration.
+        this.dom.sandbox.classList.toggle('backdrop-root', settings.technique === 'backdrop');
         lens.style.width = lens.style.height = `${size}px`;
         // The portal copy must have the sandbox's dimensions so its layout matches the real content.
         const { w, h } = this.sandboxSize();
@@ -851,6 +863,27 @@ function download(name, text, type) {
     a.click();
     a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+/**
+ * Replaces the map URLs with data: URIs. feImage then needs no network load, which
+ * removes a common failure point in WebKit and makes the maps available on the first
+ * frame in every engine. Falls back to the file URL if fetching fails.
+ */
+async function inlineMaps() {
+    await Promise.all(Object.keys(MAPS).map(async key => {
+        try {
+            const blob = await (await fetch(MAPS[key])).blob();
+            MAPS[key] = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+        } catch {
+            /* keep the file URL */
+        }
+    }));
 }
 
 function preload(src) {

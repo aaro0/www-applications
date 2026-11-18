@@ -133,9 +133,11 @@ body.static .warning { display: none; }
     background: #111;
     overflow: hidden;
     isolation: isolate;
-    filter: blur(0px); /* establishes the Backdrop Root, as in style.css */
     touch-action: none;
     cursor: crosshair;
+}
+.sandbox.backdrop-root {
+    filter: blur(0px); /* establishes the Backdrop Root, as in style.css; set by benchmark.js for backdrop only */
 }
 
 .bg, .portal-content {
