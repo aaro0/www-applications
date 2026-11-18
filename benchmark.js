@@ -314,7 +314,10 @@ class Bench {
             return;
         }
 
+        // Only Blink renders SVG filters in backdrop-filter; default other engines to the portal technique.
+        if (detectBrowser().engine !== 'Blink') this.dom.form.elements.technique.value = 'portal';
         this.bindUi();
+        this.updateTechniqueWarning();
         this.applyBackground();
         this.preview();
         this.env = await collectEnvironment();
@@ -709,6 +712,7 @@ class Bench {
         this.dom.csv.addEventListener('click', () => this.exportCsv());
         this.dom.form.addEventListener('change', e => {
             if (e.target.name === 'background') this.applyBackground();
+            if (e.target.name === 'technique') this.updateTechniqueWarning();
             if (!this.running) this.preview();
         });
         this.dom.previewConfig.addEventListener('change', () => this.preview());
@@ -740,6 +744,11 @@ class Bench {
         const centre = this.lensCentre ?? { x: w / 2, y: h / 2 };
         this.applyConfig(this.dom.previewConfig.value, parseInt(this.dom.previewSize.value, 10), this.readSettings());
         this.setLens(centre.x, centre.y);
+    }
+
+    updateTechniqueWarning() {
+        const backdrop = this.dom.form.elements.technique.value === 'backdrop';
+        document.getElementById('technique-warning').hidden = !(backdrop && detectBrowser().engine !== 'Blink');
     }
 
     setRunningUi(running) {

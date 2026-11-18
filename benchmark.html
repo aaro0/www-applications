@@ -121,6 +121,12 @@
                     <button type="button" id="btn-csv" disabled>Export CSV</button>
                     <span id="status" class="status">Idle. Drag on the sandbox to preview the selected configuration.</span>
                 </div>
+                <p id="technique-warning" class="warning" hidden>
+                    This browser does not render SVG filters in <code>backdrop-filter</code> (only Blink does).
+                    With the <em>backdrop</em> technique every configuration shows just the rim and does no
+                    filter work, so the results all look the same. Use the <em>portal</em> technique to measure
+                    this browser; use <em>backdrop</em> here only to document that it is unsupported.
+                </p>
                 <div class="preview-controls">
                     <label>Preview config <select id="preview-config"></select></label>
                     <label>Preview diameter <select id="preview-size"></select></label>
